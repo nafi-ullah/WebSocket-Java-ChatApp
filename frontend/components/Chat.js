@@ -17,7 +17,7 @@ export default function Chat() {
       };
 
       socket.onclose = () => {
-        setMessages((prevMessages) => [...prevMessages, 'Disconnected from the server']);
+        setMessages((prevMessages) => [...prevMessages, 'System: Disconnected from the server']);
       };
 
       socket.onerror = (error) => {
@@ -45,12 +45,49 @@ export default function Chat() {
     }
   };
 
+  const parseMessage = (msg) => {
+    const splitIndex = msg.indexOf(':');
+    if (splitIndex !== -1) {
+      return {
+        user: msg.substring(0, splitIndex),
+        text: msg.substring(splitIndex + 1).trim(),
+      };
+    }
+    return { user: 'Welcome', text: msg };
+  };
+
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-white w-screen">
       <div id="chat-box" className="w-1/2 h-96 border p-4 overflow-y-scroll mb-4" ref={chatBoxRef}>
-        {messages.map((msg, index) => (
-          <p key={index}>{msg}</p>
-        ))}
+        {messages.map((msg, index) => {
+          const { user, text } = parseMessage(msg);
+          const isCurrentUser = user === username;
+          return (
+            <div
+              key={index}
+              className={`flex items-start mb-4 ${isCurrentUser ? 'justify-end' : 'justify-start'}`}
+            >
+              {!isCurrentUser && (
+                <img
+                  src="https://i.pravatar.cc/400"
+                  alt="Profile"
+                  className="w-10 h-10 rounded-full mr-2"
+                />
+              )}
+              <div className={`p-2 rounded ${isCurrentUser ? 'bg-blue-100 text-right' : 'bg-gray-100 text-left'}`}>
+                <p className="font-bold">{user}</p>
+                <p>{text}</p>
+              </div>
+              {isCurrentUser && (
+                <img
+                  src="https://i.pravatar.cc/500"
+                  alt="Profile"
+                  className="w-10 h-10 rounded-full ml-2"
+                />
+              )}
+            </div>
+          );
+        })}
       </div>
       <div id="username-input" className="w-1/2 flex mb-4">
         <input
