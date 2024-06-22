@@ -4,7 +4,7 @@ const nextConfig = {
       remotePatterns: [
         {
           protocol: 'https',
-          hostname: 'jobsnavi.obs.eu-de.otc.t-systems.com',
+          hostname: 'res.cloudinary.com',
           port: '',
           pathname: "/**",
         },

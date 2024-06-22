@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import data from '@emoji-mart/data';
 import Picker from '@emoji-mart/react';
+import Upload from './Upload';
 
 export default function Chat() {
   const [socket, setSocket] = useState(null);
@@ -12,6 +13,7 @@ export default function Chat() {
   const [activeUsers, setActiveUsers] = useState([]);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const chatBoxRef = useRef(null);
+  const [myImageUrl, setMyImageUrl] = useState('');
 
   useEffect(() => {
     if (socket) {
@@ -78,6 +80,16 @@ export default function Chat() {
     const isCurrentUser = msgUsername === username;
     const isServer = msg.startsWith("Server");
 
+    let imageUrl = null;
+          
+          const imageIndex = msgText.indexOf('https://');
+          if (imageIndex !== -1) {
+            const endIndex = msgText.indexOf('.png', imageIndex) + 4;
+            imageUrl = msgText.substring(imageIndex, endIndex);
+           
+          }
+    
+
     return (
       <div
         key={index}
@@ -95,7 +107,11 @@ export default function Chat() {
           />
         )}
         <div className={`p-2 px-4 rounded-2xl ${isServer ? 'bg-red-300' : isCurrentUser ? 'bg-blue-100 text-right' : 'bg-gray-100 text-left'}`}>
-        {msgText}
+        
+        {!imageUrl && <p>{msgText}</p>}
+        {imageUrl && (
+                      <img src={imageUrl} alt="Attached" className="mt-2 max-w-xs" />
+                    )}
          </div>
          {isCurrentUser && !isServer && (
           <img
@@ -131,7 +147,7 @@ export default function Chat() {
           Join Chat
         </button>
       </div>
-      <div id="message-input" className="lg:w-1/2 w-full flex relative">
+      <div id="message-input" className="lg:w-1/2 w-full flex relative ">
         <input
           type="text"
           id="message"
@@ -158,6 +174,9 @@ export default function Chat() {
           </div>
         )}
       </div>
+      <div className='lg:w-1/2 w-full  mt-2 flex justify-end'>
+      <Upload setMyImageUrl={setMessage}/>
+    </div>
     </div>
   );
 }
