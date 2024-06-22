@@ -10,66 +10,71 @@ public class Client {
     private BufferedWriter bufferedWriter;
     private String username;
 
-    public Client(Socket socket, String username){
-        try{
+    public Client(Socket socket, String username) {
+        try {
             this.socket = socket;
-            this.bufferedWriter =  new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-            this.bufferedReader =  new BufferedReader(new InputStreamReader((socket.getInputStream())));
+            this.bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+            this.bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             this.username = username;
-        }catch (IOException e){
+        } catch (IOException e) {
             closeEverything(socket, bufferedReader, bufferedWriter);
         }
     }
 
-    public void sendMessage(){
-        try{
+    public void sendMessage() {
+        try {
             bufferedWriter.write(username);
             bufferedWriter.newLine();
             bufferedWriter.flush();
 
             Scanner scanner = new Scanner(System.in);
-            while(socket.isConnected()){
+            while (socket.isConnected()) {
                 String messageToSend = scanner.nextLine();
-                bufferedWriter.write(username + ": " + messageToSend);
-                bufferedWriter.newLine();
-                bufferedWriter.flush();
-
+                if (messageToSend != null && !messageToSend.isBlank()) {
+                    bufferedWriter.write(username + ": " + messageToSend);
+                    bufferedWriter.newLine();
+                    bufferedWriter.flush();
+                }
             }
-        }catch (IOException e){
+        } catch (IOException e) {
             closeEverything(socket, bufferedReader, bufferedWriter);
         }
     }
-    public void listendForMessage(){
+
+    public void listenForMessage() {
         new Thread(new Runnable() {
             @Override
             public void run() {
                 String msgFromGroupChat;
 
-                while (socket.isConnected()){
+                while (socket.isConnected()) {
                     try {
                         msgFromGroupChat = bufferedReader.readLine();
-                        System.out.println(msgFromGroupChat);
-
-                    }catch (IOException e){
+                        if (msgFromGroupChat != null) {
+                            System.out.println(msgFromGroupChat);
+                        } else {
+                            closeEverything(socket, bufferedReader, bufferedWriter);
+                        }
+                    } catch (IOException e) {
                         closeEverything(socket, bufferedReader, bufferedWriter);
                     }
                 }
             }
         }).start();
     }
-    public void closeEverything(Socket socket, BufferedReader bufferedReader, BufferedWriter bufferedWriter){
+
+    public void closeEverything(Socket socket, BufferedReader bufferedReader, BufferedWriter bufferedWriter) {
         try {
-            if(bufferedReader != null){
+            if (bufferedReader != null) {
                 bufferedReader.close();
             }
-            if(bufferedWriter != null){
+            if (bufferedWriter != null) {
                 bufferedWriter.close();
             }
-            if(socket != null){
+            if (socket != null) {
                 socket.close();
             }
-
-        }catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -80,7 +85,7 @@ public class Client {
         String username = scanner.nextLine();
         Socket socket = new Socket("localhost", 1234);
         Client client = new Client(socket, username);
-        client.listendForMessage();
+        client.listenForMessage();
         client.sendMessage();
     }
 }
