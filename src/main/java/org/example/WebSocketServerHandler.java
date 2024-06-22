@@ -68,7 +68,7 @@ public class WebSocketServerHandler extends WebSocketServer {
     }
 
     private void broadcastActiveUsers() {
-        broadcastMessage(null, null, "Active users updated");
+        broadcastMessage(null, null, "Changes in Conversation Participants");
     }
 
     public static void main(String[] args) {

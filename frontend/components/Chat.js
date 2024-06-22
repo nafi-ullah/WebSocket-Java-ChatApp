@@ -63,39 +63,58 @@ export default function Chat() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-white w-screen">
-      <div className="w-1/2 h-16 border p-4 mb-4">
-        <p>Active users: {activeUsers.join(", ")}</p>
+    <div className="flex flex-col lg:items-center items-start lg:justify-center justify-start h-screen bg-white w-screen p-3">
+      <div className="lg:w-1/2 w-full h-16 border p-4 mb-4 mt-10">
+      <div className='flex'>Active users: {activeUsers.map((user, index) => (
+          <div key={index} className="relative flex items-center px-3 rounded-lg bg-slate-200 mx-2">
+            {user}
+            <span className="absolute bottom-0 right-0 h-2 w-2 bg-green-500 rounded-full"></span>
+          </div>
+        ))}</div>
       </div>
-      <div id="chat-box" className="w-1/2 h-96 border p-4 overflow-y-scroll mb-4" ref={chatBoxRef}>
-        {messages.map((msg, index) => {
-          const isCurrentUser = msg.startsWith(username);
-          return (
-            <div
-              key={index}
-              className={`flex items-start mb-4 ${isCurrentUser ? 'justify-end' : 'justify-start'}`}
-            >
-              {!isCurrentUser && (
-                <img
-                  src="https://via.placeholder.com/40"
-                  alt="Profile"
-                  className="w-10 h-10 rounded-full mr-2"
-                />
-              )}
-              <div className={`p-2 rounded ${isCurrentUser ? 'bg-blue-100 text-right' : 'bg-gray-100 text-left'}`}>
-                <p>{msg}</p>
-              </div>
-              {isCurrentUser && (
-                <img
-                  src="https://via.placeholder.com/40"
-                  alt="Profile"
-                  className="w-10 h-10 rounded-full ml-2"
-                />
-              )}
-            </div>
-          );
-        })}
+      <div id="chat-box" className="lg:w-1/2 w-full h-96 border p-4 overflow-y-scroll mb-4" ref={chatBoxRef}>
+  {messages.map((msg, index) => {
+    const [msgUsername, msgText] = msg.split(': ', 2);
+    const isCurrentUser = msgUsername === username;
+    const isServer = msg.startsWith("Server");
+
+    return (
+      <div
+        key={index}
+        className={`flex items-start mb-4 ${isCurrentUser ? 'justify-end' : 'justify-start'}`}
+      >
+        
+        <div>
+         <div className={`${isCurrentUser?  '': 'flex justify-end'} text-sm text-gray-600`}>{msgUsername}</div>
+         <div className='flex'>
+         {!isCurrentUser && !isServer && (
+          <img
+            src="https://via.placeholder.com/40"
+            alt="Profile"
+            className="w-10 h-10 rounded-full mr-2"
+          />
+        )}
+        <div className={`p-2 px-4 rounded-2xl ${isServer ? 'bg-red-300' : isCurrentUser ? 'bg-blue-100 text-right' : 'bg-gray-100 text-left'}`}>
+        {msgText}
+         </div>
+         {isCurrentUser && !isServer && (
+          <img
+            src="https://via.placeholder.com/40"
+            alt="Profile"
+            className="w-10 h-10 rounded-full ml-2"
+          />
+        )}
+         </div>
+        </div>
+        
+       
       </div>
+    );
+  })}
+</div>
+
+
+
       <div id="username-input" className="w-1/2 flex mb-4">
         <input
           type="text"
@@ -112,7 +131,7 @@ export default function Chat() {
           Join Chat
         </button>
       </div>
-      <div id="message-input" className="w-1/2 flex relative">
+      <div id="message-input" className="lg:w-1/2 w-full flex relative">
         <input
           type="text"
           id="message"
