@@ -1,12 +1,15 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
+import data from '@emoji-mart/data';
+import Picker from '@emoji-mart/react';
 
 export default function Chat() {
   const [socket, setSocket] = useState(null);
   const [username, setUsername] = useState('');
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([]);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const chatBoxRef = useRef(null);
 
   useEffect(() => {
@@ -53,7 +56,11 @@ export default function Chat() {
         text: msg.substring(splitIndex + 1).trim(),
       };
     }
-    return { user: 'Welcome', text: msg };
+    return { user: 'Unknown', text: msg };
+  };
+
+  const addEmoji = (emoji) => {
+    setMessage((prevMessage) => prevMessage + emoji.native);
   };
 
   return (
@@ -69,7 +76,7 @@ export default function Chat() {
             >
               {!isCurrentUser && (
                 <img
-                  src="https://i.pravatar.cc/400"
+                  src="https://via.placeholder.com/40"
                   alt="Profile"
                   className="w-10 h-10 rounded-full mr-2"
                 />
@@ -80,7 +87,7 @@ export default function Chat() {
               </div>
               {isCurrentUser && (
                 <img
-                  src="https://i.pravatar.cc/500"
+                  src="https://via.placeholder.com/40"
                   alt="Profile"
                   className="w-10 h-10 rounded-full ml-2"
                 />
@@ -105,7 +112,7 @@ export default function Chat() {
           Join Chat
         </button>
       </div>
-      <div id="message-input" className="w-1/2 flex">
+      <div id="message-input" className="w-1/2 flex relative">
         <input
           type="text"
           id="message"
@@ -120,6 +127,17 @@ export default function Chat() {
         >
           Send
         </button>
+        <button
+          onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+          className="absolute right-48 top-1/2 transform -translate-y-1/2"
+        >
+          😊
+        </button>
+        {showEmojiPicker && (
+          <div className="absolute bottom-12 right-0">
+            <Picker data={data} onEmojiSelect={addEmoji} />
+          </div>
+        )}
       </div>
     </div>
   );

@@ -26,6 +26,7 @@ public class WebSocketServerHandler extends WebSocketServer {
     @Override
     public void onClose(WebSocket conn, int code, String reason, boolean remote) {
         clients.remove(conn);
+        broadcastMessage("Server: One of You Leaved:");
         System.out.println("Closed connection: " + conn.getRemoteSocketAddress());
     }
 
