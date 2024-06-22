@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Application</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        #chat-box {
+            width: 50%;
+            height: 400px;
+            border: 1px solid #ccc;
+            overflow-y: scroll;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        #message-input {
+            width: 50%;
+            display: flex;
+        }
+        #message-input input {
+            width: 80%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-right: none;
+        }
+        #message-input button {
+            width: 20%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+        }
+        #message-input button:hover {
+            background-color: #0056b3;
+        }
+        #username-input {
+            width: 50%;
+            display: flex;
+            margin-bottom: 10px;
+        }
+        #username-input input {
+            width: 80%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-right: none;
+        }
+        #username-input button {
+            width: 20%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            background-color: #28a745;
+            color: white;
+            cursor: pointer;
+        }
+        #username-input button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+<div id="chat-box"></div>
+<div id="username-input">
+    <input type="text" id="username" placeholder="Enter your username">
+    <button onclick="setUsername()">Join Chat</button>
+</div>
+<div id="message-input" style="display: none;">
+    <input type="text" id="message" placeholder="Enter your message">
+    <button onclick="sendMessage()">Send</button>
+</div>
+
+<script>
+    let socket;
+    let username;
+    const chatBox = document.getElementById('chat-box');
+    const messageInput = document.getElementById('message');
+    const usernameInput = document.getElementById('username-input');
+    const messageInputDiv = document.getElementById('message-input');
+
+    function setUsername() {
+        username = document.getElementById('username').value;
+        if (username) {
+            socket = new WebSocket('ws://localhost:1234');
+            socket.onopen = () => {
+                socket.send(username);
+                usernameInput.style.display = 'none';
+                messageInputDiv.style.display = 'flex';
+            };
+
+            socket.onmessage = (event) => {
+                const message = document.createElement('p');
+                message.textContent = event.data;
+                chatBox.appendChild(message);
+                chatBox.scrollTop = chatBox.scrollHeight;
+            };
+
+            socket.onclose = (event) => {
+                const message = document.createElement('p');
+                message.textContent = 'Disconnected from the server';
+                chatBox.appendChild(message);
+            };
+
+            socket.onerror = (error) => {
+                console.error('WebSocket error:', error);
+            };
+        } else {
+            alert('Please enter a username.');
+        }
+    }
+
+    function sendMessage() {
+        const message = messageInput.value;
+        if (message && socket && socket.readyState === WebSocket.OPEN) {
+            socket.send(username + ': ' + message);
+            messageInput.value = '';
+        }
+    }
+</script>
+</body>
+</html>
