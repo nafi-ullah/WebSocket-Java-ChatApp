@@ -9,13 +9,23 @@ export default function Chat() {
   const [username, setUsername] = useState('');
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([]);
+  const [activeUsers, setActiveUsers] = useState([]);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const chatBoxRef = useRef(null);
 
   useEffect(() => {
     if (socket) {
       socket.onmessage = (event) => {
-        setMessages((prevMessages) => [...prevMessages, event.data]);
+        const data = JSON.parse(event.data);
+        if (data.activeUsers) {
+          setActiveUsers(data.activeUsers.split(", "));
+        }
+        if (data.userMessage) {
+          setMessages((prevMessages) => [...prevMessages, `${data.username}: ${data.userMessage}`]);
+        }
+        if (data.serverMessage) {
+          setMessages((prevMessages) => [...prevMessages, `Server: ${data.serverMessage}`]);
+        }
         chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
       };
 
@@ -43,20 +53,9 @@ export default function Chat() {
 
   const handleSendMessage = () => {
     if (message && socket && socket.readyState === WebSocket.OPEN) {
-      socket.send(`${username}: ${message}`);
+      socket.send(message);
       setMessage('');
     }
-  };
-
-  const parseMessage = (msg) => {
-    const splitIndex = msg.indexOf(':');
-    if (splitIndex !== -1) {
-      return {
-        user: msg.substring(0, splitIndex),
-        text: msg.substring(splitIndex + 1).trim(),
-      };
-    }
-    return { user: 'Unknown', text: msg };
   };
 
   const addEmoji = (emoji) => {
@@ -65,10 +64,12 @@ export default function Chat() {
 
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-white w-screen">
+      <div className="w-1/2 h-16 border p-4 mb-4">
+        <p>Active users: {activeUsers.join(", ")}</p>
+      </div>
       <div id="chat-box" className="w-1/2 h-96 border p-4 overflow-y-scroll mb-4" ref={chatBoxRef}>
         {messages.map((msg, index) => {
-          const { user, text } = parseMessage(msg);
-          const isCurrentUser = user === username;
+          const isCurrentUser = msg.startsWith(username);
           return (
             <div
               key={index}
@@ -82,8 +83,7 @@ export default function Chat() {
                 />
               )}
               <div className={`p-2 rounded ${isCurrentUser ? 'bg-blue-100 text-right' : 'bg-gray-100 text-left'}`}>
-                <p className="font-bold">{user}</p>
-                <p>{text}</p>
+                <p>{msg}</p>
               </div>
               {isCurrentUser && (
                 <img
